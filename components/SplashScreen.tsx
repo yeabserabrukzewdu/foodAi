@@ -20,7 +20,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinished }) => {
         {/* NutriTrack AI Logo */}
         <div className="animate-logoIn">
            <img
-          src="./public/logo.png"
+          src="/logo.png"
           alt="BEY Solution Logo"
           className="h-40 mx-auto"
         />
@@ -36,7 +36,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinished }) => {
       <div className="pb-17 text-center animate-poweredByIn">
         <p className="text-sm text-gray-400 mb-2 font-semibold tracking-widest uppercase">Powered By</p>
         <img
-          src="./public/bey.png"
+          src="/bey.png"
           alt="BEY Solution Logo"
           className="h-12 mx-auto"
         />
