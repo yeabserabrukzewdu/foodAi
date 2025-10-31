@@ -11,7 +11,6 @@ import { playSound } from "../utils/soundUtils"
 import type { MacroGoals, UserProfile } from "../types"
 
 interface UserQuizModalProps {
-  onClose: () => void
   onComplete: (profile: UserProfile) => void
 }
 
@@ -93,18 +92,20 @@ const calculateNutritionGoals = (data: QuizData): MacroGoals => {
   return { calories, protein, carbs, fat }
 }
 
-const OptionButton = ({
+interface OptionButtonProps {
+  label: string;
+  value: string;
+  checked: boolean;
+  onChange: (value: string) => void;
+  icon?: string;
+}
+
+const OptionButton: React.FC<OptionButtonProps> = ({
   label,
   value,
   checked,
   onChange,
   icon,
-}: {
-  label: string
-  value: string
-  checked: boolean
-  onChange: (value: string) => void
-  icon?: string
 }) => (
   <button
     type="button"
@@ -127,7 +128,7 @@ const OptionButton = ({
   </button>
 )
 
-const UserQuizModal: React.FC<UserQuizModalProps> = ({ onClose, onComplete }) => {
+const UserQuizModal: React.FC<UserQuizModalProps> = ({ onComplete }) => {
   const [step, setStep] = useState(1)
   const [direction, setDirection] = useState<"left" | "right">("left")
   const { t, setLanguage } = useTranslation()
@@ -188,7 +189,6 @@ const UserQuizModal: React.FC<UserQuizModalProps> = ({ onClose, onComplete }) =>
 
         await updateUserProfile(userId, newProfile)
         onComplete(newProfile)
-        onClose()
       } catch (err) {
         setError("Failed to save profile. Try again.")
         console.error("Quiz save error:", err)
@@ -227,7 +227,7 @@ const UserQuizModal: React.FC<UserQuizModalProps> = ({ onClose, onComplete }) =>
   const bmiSuggestion = bmi ? getBMISuggestion(bmi) : ""
 
   useEffect(() => {
-    if (step === 9 || (step === 11 && quizData.goal === "maintain") || step === totalSteps) {
+    if (step === 9 || (step === 11 && quizData.goal === "maintain")) {
       const timer = setTimeout(() => {
         handleNext()
       }, 2000)
@@ -243,7 +243,7 @@ const UserQuizModal: React.FC<UserQuizModalProps> = ({ onClose, onComplete }) =>
 
 
   return (
-  <div className="fixed inset-0 bg-gray-100 flex items-center justify-center z-50 h-screen w-screen overflow-hidden">
+      <div className="fixed inset-0 bg-gray-100 flex items-center justify-center z-50 h-screen w-screen overflow-hidden">
   <AnimatePresence mode="wait" initial={false} custom={direction}>
     <motion.div
       key={step}
@@ -254,8 +254,6 @@ const UserQuizModal: React.FC<UserQuizModalProps> = ({ onClose, onComplete }) =>
       transition={{ duration: 0.4, ease: "easeInOut" }}
       className="relative bg-white rounded-2xl p-8 w-full h-full max-w-4xl shadow-2xl border border-gray-200 overflow-y-auto"
     >
-      {/* your existing modal content goes here */}
-
         <div className="flex justify-between items-start mb-8">
           <div>
             <h2 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-orange-500 bg-clip-text text-transparent">
@@ -263,13 +261,6 @@ const UserQuizModal: React.FC<UserQuizModalProps> = ({ onClose, onComplete }) =>
             </h2>
             <p className="text-sm text-gray-600 mt-1">{t("quizIntro")}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-orange-600 hover:bg-orange-50 p-2 rounded-lg transition-all duration-300 transform hover:scale-110"
-            aria-label="Skip quiz and enter app"
-          >
-            <XIcon className="w-6 h-6" />
-          </button>
         </div>
 
         <div className="mb-8">
@@ -423,7 +414,7 @@ const UserQuizModal: React.FC<UserQuizModalProps> = ({ onClose, onComplete }) =>
                   { value: "keto", label: "Keto", icon: "🥑" },
                 ].map((pref) => (
                   <OptionButton
-                    
+                    key={pref.value}
                     label={pref.label}
                     value={pref.value}
                     checked={quizData.dietaryPreference === pref.value}
@@ -446,7 +437,7 @@ const UserQuizModal: React.FC<UserQuizModalProps> = ({ onClose, onComplete }) =>
                   { value: "active", label: t('active'), icon: "💪" },
                 ].map(({ value, label, icon }) => (
                   <OptionButton
-                   
+                    key={value}
                     label={label}
                     value={value}
                     checked={quizData.activityLevel === value}
@@ -485,7 +476,7 @@ const UserQuizModal: React.FC<UserQuizModalProps> = ({ onClose, onComplete }) =>
                   { value: "gain", label: t('gainWeight'), icon: "📈" },
                 ].map((goal) => (
                   <OptionButton
-                    
+                    key={goal.value}
                     label={goal.label}
                     value={goal.value}
                     checked={quizData.goal === goal.value}
@@ -507,7 +498,7 @@ const UserQuizModal: React.FC<UserQuizModalProps> = ({ onClose, onComplete }) =>
                   { value: "aggressive", label: t('intensityAggressive'), icon: "🚀" },
                 ].map((intensity) => (
                   <OptionButton
-                    
+                    key={intensity.value}
                     label={intensity.label}
                     value={intensity.value}
                     checked={quizData.intensity === intensity.value}
@@ -584,25 +575,16 @@ const UserQuizModal: React.FC<UserQuizModalProps> = ({ onClose, onComplete }) =>
                 onClick={handleNext}
                 disabled={isLoading}
                 className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
-                aria-label="Finish quiz and enter app"
+                aria-label="Continue to app"
               >
-                {isLoading ? "Saving..." : t('finish')}
+                {isLoading ? "Saving..." : t('continueToApp')}
               </button>
             )}
           </div>
-          <button
-            onClick={onClose}
-            className="w-full text-gray-600 hover:text-orange-600 font-semibold text-sm transition-colors py-2"
-            aria-label="Skip quiz and enter app"
-          >
-            {t('skipQuiz')}
-          </button>
         </div>
-          </motion.div>
+    </motion.div>
   </AnimatePresence>
-</div>
-
-   
+    </div>
   )
 }
 
